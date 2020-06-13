@@ -10,7 +10,8 @@ typedef unsigned char uchar;
 uchar encdec;
 uchar pass[32];
 uchar expandedKey[16][16];
-uchar buffer[16];
+uchar buffer1[16];
+uchar buffer2[16];
 uchar filein[500];
 uchar fileout[500];
 

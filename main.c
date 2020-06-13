@@ -16,7 +16,8 @@ int main(int argc, char *argv[])
     printf("encrypt or decrypt? (e/d)\n");
     scanf(" %c", &encdec);
     
-    switch(encdec){
+    switch(encdec)
+    {
         case 'e':
             printf("enter filename to encrypt\n");
             fflush(stdin);
@@ -34,9 +35,35 @@ int main(int argc, char *argv[])
             openfile = fopen(filein, "rb");
             writefile = fopen(fileout, "wb");
 
-            while(fread(buffer, 1, 16, openfile)){
-                Encrypt(buffer);
-                fwrite(buffer, 1, 16, writefile);
+            
+            fread(buffer2, 1, 16, openfile);
+            //fseek(openfile, 16, SEEK_SET);
+            fread(buffer1, 1, 16, openfile);
+            Encrypt(buffer2);
+            fwrite(buffer2, 1, 16, writefile);
+            for(int i=0; i<16; i++)
+            {
+                buffer1[i] ^= buffer2[i];
+            }
+            Encrypt(buffer1);
+            fwrite(buffer1, 1, 16, writefile);
+
+            while(true)
+            {
+                for(int i=0; i<16; i++)
+                {
+                    buffer2[i] = buffer1[i];
+                }
+
+                fread(buffer1, 1, 16, openfile);
+                
+                //fwrite(buffer2, 1, 16, writefile);
+                for(int i=0; i<16; i++)
+                {
+                    buffer1[i] ^= buffer2[i];
+                }
+                Encrypt(buffer1);
+                fwrite(buffer1, 1, 16, writefile);
             }
 
             printf("finish\n");
@@ -58,7 +85,8 @@ int main(int argc, char *argv[])
             openfile = fopen(filein, "rb");
             writefile = fopen(fileout, "wb");
 
-            while(fread(buffer, 1, 16, openfile)){
+            while(fread(buffer, 1, 16, openfile))
+            {
                 Decrypt(buffer);
                 fwrite(buffer, 1, 16, writefile);
             }
