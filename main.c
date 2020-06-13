@@ -48,16 +48,16 @@ int main(int argc, char *argv[])
             Encrypt(buffer1);
             fwrite(buffer1, 1, 16, writefile);
 
-            while(true)
+            while(1)
             {
                 for(int i=0; i<16; i++)
                 {
                     buffer2[i] = buffer1[i];
                 }
 
-                fread(buffer1, 1, 16, openfile);
+                if(!fread(buffer1, 1, 16, openfile))
+                    break;
                 
-                //fwrite(buffer2, 1, 16, writefile);
                 for(int i=0; i<16; i++)
                 {
                     buffer1[i] ^= buffer2[i];
