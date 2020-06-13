@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include "defs.h"
 
 
@@ -85,10 +86,10 @@ int main(int argc, char *argv[])
             openfile = fopen(filein, "rb");
             writefile = fopen(fileout, "wb");
 
-            while(fread(buffer, 1, 16, openfile))
+            while(fread(buffer1, 1, 16, openfile))
             {
-                Decrypt(buffer);
-                fwrite(buffer, 1, 16, writefile);
+                Decrypt(buffer1);
+                fwrite(buffer1, 1, 16, writefile);
             }
 
 
@@ -112,7 +113,7 @@ void KeyExpansion()
         expandedKey[1][i] = pass[i+16];
     }
     
-    for(int i=2; i<16; i++)
+    for(int i=2; i<14; i++)
     {
         temp[0] = expandedKey[i-1][12];
         temp[1] = expandedKey[i-1][13];
@@ -307,7 +308,7 @@ void Encrypt(uchar *block)
 {
     AddRoundKey(block, expandedKey[0]);
     
-    for(int i=1; i<=14; i++)
+    for(int i=1; i<=12; i++)
     {
         SubBytes(block);
         ShiftRows(block);
@@ -317,16 +318,16 @@ void Encrypt(uchar *block)
     
     SubBytes(block);
     ShiftRows(block);
-    AddRoundKey(block, expandedKey[15]);
+    AddRoundKey(block, expandedKey[13]);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void Decrypt(unsigned char *block)
 {
-    AddRoundKey(block, expandedKey[15]);
+    AddRoundKey(block, expandedKey[13]);
     InvShiftRows(block);
     InvSubBytes(block);
     
-    for(int i=14; i>=1; i--)
+    for(int i=12; i>=1; i--)
     {
         AddRoundKey(block, expandedKey[i]);
         InvMixColumns(block);
