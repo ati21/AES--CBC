@@ -9,9 +9,10 @@
 int main(int argc, char *argv[])
 {
     FILE *openfile;
+    FILE *tempfile;
     FILE *writefile;
     
-    printf("enter 32 chars: ");
+    printf("enter 128 chars: ");
     scanf("%[^\n]", &pass);
     //printf("you enter: %s\n", pass);
     printf("encrypt or decrypt? (e/d)\n");
@@ -31,6 +32,7 @@ int main(int argc, char *argv[])
             scanf("%[^\n]", &fileout);
             printf("you enter: %s\n", fileout);
             printf("working...\n");
+            start = time(NULL);
 
             KeyExpansion();
             openfile = fopen(filein, "rb");
@@ -66,8 +68,12 @@ int main(int argc, char *argv[])
                 Encrypt(buffer1);
                 fwrite(buffer1, 1, 16, writefile);
             }
-
+            fclose(openfile);
+            fclose(writefile);
+            
+            end = time(NULL);
             printf("finish\n");
+            printf("Time taken to encode is %.2f seconds", difftime(end, start)); 
             break;
         case 'd':
             printf("enter filename to decrypt\n");
@@ -81,19 +87,94 @@ int main(int argc, char *argv[])
             scanf("%[^\n]", &fileout);
             printf("you enter: %s\n", fileout);
             printf("working...\n");
+            start = time(NULL);
 
             KeyExpansion();
             openfile = fopen(filein, "rb");
-            writefile = fopen(fileout, "wb");
+            tempfile = fopen(temp, "wb");
 
-            while(fread(buffer1, 1, 16, openfile))
+            //unsigned long count = 32;
+            fseek(openfile, 0, SEEK_END);
+            long long flength = ftell (openfile);
+            rewind(openfile);
+            //flength = flength / 16;
+            flength -= 16;
+            fseek(openfile, flength, SEEK_SET);
+            fread(buffer1, 1, 16, openfile);
+            flength -= 16;
+            fseek(openfile, flength, SEEK_SET);
+            fread(buffer2, 1, 16, openfile);
+            
+
+            Decrypt(buffer1);
+            for(int i=0; i<16; i++)
             {
+                buffer1[i] ^= buffer2[i];
+            }
+            fwrite(buffer1, 1, 16, tempfile);
+            for(int i=0; i<16; i++)
+            {
+                buffer1[i] = buffer2[i];
+            }
+            //fseek(openfile, -16, SEEK_END);
+            
+            while(1)
+            {
+                flength -= 16;
+                printf("lSize: %lld\n", flength);
+                if(flength < 0)
+                {
+                    break;
+                }
+                                
+                fseek(openfile, flength, SEEK_SET);
+                fread(buffer2, 1, 16, openfile);
+                                
                 Decrypt(buffer1);
+                for(int i=0; i<16; i++)
+                {
+                    buffer1[i] ^= buffer2[i];
+                }
+                //rewind(writefile);
+                fwrite(buffer1, 1, 16, tempfile);
+
+                for(int i=0; i<16; i++)
+                {
+                    buffer1[i] = buffer2[i];
+                }
+            }
+
+            Decrypt(buffer1);
+            fwrite(buffer1, 1, 16, tempfile);
+
+            fclose(openfile);
+            fclose(tempfile);
+
+            tempfile = fopen(temp, "rb");
+            writefile = fopen(fileout, "wb");
+            fseek(tempfile, 0, SEEK_END);
+            flength = ftell (tempfile);
+            rewind(tempfile);
+            
+            while(1)
+            {
+                flength -= 16;
+                if(flength < 0)
+                {
+                    break;
+                }
+                fseek(tempfile, flength, SEEK_SET);
+                fread(buffer1, 1, 16, tempfile);
                 fwrite(buffer1, 1, 16, writefile);
             }
 
+            fclose(tempfile);
+            fclose(writefile);
+            remove(temp);
 
+            end = time(NULL);
             printf("finish\n");
+            printf("Time taken to encode is %.2f seconds", difftime(end, start));
             break;
         default:
             printf("error wrong character\n");
@@ -105,15 +186,17 @@ int main(int argc, char *argv[])
 void KeyExpansion()
 {
     uchar temp[4];
-    int rconCounter = 1;
+    unsigned int rconCounter = 1;
     
     for(int i=0; i<16; i++)
     {
         expandedKey[0][i] = pass[i];
         expandedKey[1][i] = pass[i+16];
+        expandedKey[2][i] = pass[i+32];
+        expandedKey[3][i] = pass[i+48];
     }
     
-    for(int i=2; i<14; i++)
+    for(int i=4; i<250; i++)
     {
         temp[0] = expandedKey[i-1][12];
         temp[1] = expandedKey[i-1][13];
@@ -308,7 +391,7 @@ void Encrypt(uchar *block)
 {
     AddRoundKey(block, expandedKey[0]);
     
-    for(int i=1; i<=12; i++)
+    for(int i=1; i<=248; i++)
     {
         SubBytes(block);
         ShiftRows(block);
@@ -318,16 +401,16 @@ void Encrypt(uchar *block)
     
     SubBytes(block);
     ShiftRows(block);
-    AddRoundKey(block, expandedKey[13]);
+    AddRoundKey(block, expandedKey[249]);
 }
 ////////////////////////////////////////////////////////////////////////////////
 void Decrypt(unsigned char *block)
 {
-    AddRoundKey(block, expandedKey[13]);
+    AddRoundKey(block, expandedKey[249]);
     InvShiftRows(block);
     InvSubBytes(block);
     
-    for(int i=12; i>=1; i--)
+    for(int i=248; i>=1; i--)
     {
         AddRoundKey(block, expandedKey[i]);
         InvMixColumns(block);

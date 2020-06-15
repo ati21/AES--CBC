@@ -7,13 +7,15 @@ extern "C" {
 
 typedef unsigned char uchar;
 
+time_t start, end;
 uchar encdec;
-uchar pass[32];
-uchar expandedKey[14][16];
+uchar pass[128];
+uchar expandedKey[250][16];
 uchar buffer1[16];
 uchar buffer2[16];
 uchar filein[500];
 uchar fileout[500];
+uchar *temp = "tmp.bin";
 
 uchar rcon[256] = {
     0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a, 
