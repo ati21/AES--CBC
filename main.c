@@ -93,11 +93,11 @@ int main(int argc, char *argv[])
             openfile = fopen(filein, "rb");
             tempfile = fopen(temp, "wb");
 
-            //unsigned long count = 32;
+            
             fseek(openfile, 0, SEEK_END);
             long long flength = ftell (openfile);
             rewind(openfile);
-            //flength = flength / 16;
+            
             flength -= 16;
             fseek(openfile, flength, SEEK_SET);
             fread(buffer1, 1, 16, openfile);
@@ -121,7 +121,6 @@ int main(int argc, char *argv[])
             while(1)
             {
                 flength -= 16;
-                printf("lSize: %lld\n", flength);
                 if(flength < 0)
                 {
                     break;
