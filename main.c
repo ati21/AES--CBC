@@ -73,7 +73,8 @@ int main(int argc, char *argv[])
             
             end = time(NULL);
             printf("finish\n");
-            printf("Time taken to encode is %.2f seconds", difftime(end, start)); 
+            int elapsed = difftime(end, start);
+            printf("Time taken to encode is %d minutes and %d seconds", elapsed / 60, elapsed % 60); 
             break;
         case 'd':
             printf("enter filename to decrypt\n");
@@ -173,7 +174,8 @@ int main(int argc, char *argv[])
 
             end = time(NULL);
             printf("finish\n");
-            printf("Time taken to encode is %.2f seconds", difftime(end, start));
+            elapsed = difftime(end, start);
+            printf("Time taken to encode is %d minutes and %d seconds", elapsed / 60, elapsed % 60);
             break;
         default:
             printf("error wrong character\n");
